@@ -1,51 +1,51 @@
-Certainly! Here's an example of a full Java class that demonstrates how you can update the `@ExternalDocumentation` annotation with dynamic values using a simple test scenario:
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
-```java
-import io.swagger.annotations.ExternalDocumentation;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-
-@Api(value = "Your API", externalDocs = @ExternalDocumentation(value = "Placeholder URL", description = "Placeholder Description"))
-public class YourController {
-
-    @ApiOperation(value = "Your API Endpoint")
-    public void yourApiEndpoint() {
-        // Your endpoint implementation
-    }
-
-    public void updateExternalDocs(String dynamicUrl, String dynamicDescription) {
-        Api apiAnnotation = YourController.class.getAnnotation(Api.class);
-        ExternalDocumentation externalDocs = apiAnnotation.externalDocs();
-
-        // Modify the values with dynamic values
-        ExternalDocumentation modifiedExternalDocs = new ExternalDocumentation()
-                .value(dynamicUrl)
-                .description(dynamicDescription);
-
-        apiAnnotation.externalDocs(modifiedExternalDocs);
-    }
-
+public class ReadFromSqlServer {
     public static void main(String[] args) {
-        YourController controller = new YourController();
+        // Database connection parameters
+        String url = "jdbc:sqlserver://your_server_address:your_port;databaseName=your_database_name";
+        String username = "your_username";
+        String password = "your_password";
 
-        // Original Swagger documentation
-        SwaggerUtils.generateSwaggerDocumentation(controller.getClass());
+        // SQL query to fetch data from the database
+        String query = "SELECT * FROM your_table_name";
 
-        // Update external docs with dynamic values
-        controller.updateExternalDocs("https://example.com/docs", "Dynamic Documentation");
+        try {
+            // Load the SQL Server JDBC driver
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
 
-        // Updated Swagger documentation
-        SwaggerUtils.generateSwaggerDocumentation(controller.getClass());
+            // Create a connection to the database
+            Connection connection = DriverManager.getConnection(url, username, password);
+
+            // Create a statement to execute the query
+            Statement statement = connection.createStatement();
+
+            // Execute the query and get the result set
+            ResultSet resultSet = statement.executeQuery(query);
+
+            // Process the result set
+            while (resultSet.next()) {
+                // Replace "column_name" with the actual column names from your table
+                int id = resultSet.getInt("column_name");
+                String name = resultSet.getString("column_name");
+                // Continue to retrieve other columns as needed
+
+                // Process the data (you can print it, store it, etc.)
+                System.out.println("ID: " + id + ", Name: " + name);
+            }
+
+            // Close the resources
+            resultSet.close();
+            statement.close();
+            connection.close();
+        } catch (ClassNotFoundException e) {
+            System.err.println("JDBC driver not found. Make sure you have the correct JDBC driver for SQL Server in your classpath.");
+        } catch (SQLException e) {
+            System.err.println("An error occurred while accessing the database: " + e.getMessage());
+        }
     }
 }
-```
-
-In this example, we have a `YourController` class that represents your API controller. The class is annotated with `@Api` to define the API and includes an `@ExternalDocumentation` annotation with placeholder values for the URL and description.
-
-The `updateExternalDocs` method allows you to update the `@ExternalDocumentation` annotation with dynamic values. In this case, it takes in the dynamic URL and description and modifies the annotation accordingly.
-
-The `main` method demonstrates how you can generate Swagger documentation using a utility class called `SwaggerUtils`. In this example, we assume the existence of a `SwaggerUtils.generateSwaggerDocumentation` method that takes the controller class as a parameter and generates the Swagger documentation. You would need to provide the implementation for this utility class or utilize an existing Swagger library that provides such functionality.
-
-By running this example, you'll see the Swagger documentation being generated twice: once with the original placeholder values and then with the updated dynamic values applied through the `updateExternalDocs` method.
-
-Remember to adjust the code according to your specific needs and any existing Swagger libraries or utilities you are using.
